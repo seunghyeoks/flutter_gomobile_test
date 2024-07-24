@@ -27,10 +27,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  // for Communication with Native
   static const platform = MethodChannel('samplefunc');
 
   Future<void> _callSum() async {
     try {
+      // call a go function through platform.invokeMethod
       final int result = await platform.invokeMethod('sum', {"a": 5, "b": 3});
       print('Sum result: $result');
     } on PlatformException catch (e) {
@@ -40,20 +43,20 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _callReadFileContent() async {
     try {
-      // 1. asset 파일 읽기
+      // 1. read file in assets
       String content = await rootBundle.loadString('assets/test.txt');
       
-      // 2. 임시 파일 생성 및 내용 쓰기
+      // 2. copy it to temporary path
       Directory tempDir = await getTemporaryDirectory();
       String tempPath = tempDir.path;
       File tempFile = File('$tempPath/temp_test.txt');
       await tempFile.writeAsString(content);
 
-      // 3. Go 라이브러리에 임시 파일 경로 전달
+      // 3. pass the temporary path to Go function
       final String result = await platform.invokeMethod('readFileContent', {"filePath": tempFile.path});
       print('File content: $result');
 
-      // 4. 임시 파일 삭제 (선택사항)
+      // 4. remove temporary file
       await tempFile.delete();
     } on PlatformException catch (e) {
       print("Failed to read file content: '${e.message}'.");
