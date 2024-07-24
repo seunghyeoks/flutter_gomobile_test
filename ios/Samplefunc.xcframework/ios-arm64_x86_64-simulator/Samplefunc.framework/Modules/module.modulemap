@@ -1,0 +1,8 @@
+framework module "Samplefunc" {
+	header "ref.h"
+    header "Samplefunc.objc.h"
+    header "Universe.objc.h"
+    header "Samplefunc.h"
+
+    export *
+}
