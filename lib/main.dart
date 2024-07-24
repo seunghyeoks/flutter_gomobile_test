@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -37,8 +40,21 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _callReadFileContent() async {
     try {
-      final String result = await platform.invokeMethod('readFileContent', {"filePath": "test.txt"});
+      // 1. asset 파일 읽기
+      String content = await rootBundle.loadString('assets/test.txt');
+      
+      // 2. 임시 파일 생성 및 내용 쓰기
+      Directory tempDir = await getTemporaryDirectory();
+      String tempPath = tempDir.path;
+      File tempFile = File('$tempPath/temp_test.txt');
+      await tempFile.writeAsString(content);
+
+      // 3. Go 라이브러리에 임시 파일 경로 전달
+      final String result = await platform.invokeMethod('readFileContent', {"filePath": tempFile.path});
       print('File content: $result');
+
+      // 4. 임시 파일 삭제 (선택사항)
+      await tempFile.delete();
     } on PlatformException catch (e) {
       print("Failed to read file content: '${e.message}'.");
     }
@@ -53,12 +69,12 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             ElevatedButton(
-              child: const Text('Call Sum'),
               onPressed: _callSum,
+              child: const Text('Call Sum'),
             ),
             ElevatedButton(
-              child: const Text('Read File Content'),
               onPressed: _callReadFileContent,
+              child: const Text('Read File Content'),
             ),
           ],
         ),
