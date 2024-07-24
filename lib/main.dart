@@ -23,21 +23,24 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  State<StatefulWidget> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-
-  // for Communication with Native
-  static const platform = MethodChannel('samplefunc');
+  static const platform = MethodChannel('samplefunc');  // for Communication with Native
+  String _fileContent = 'File content or sum result will be shown here';
 
   Future<void> _callSum() async {
     try {
       // call a go function through platform.invokeMethod
       final int result = await platform.invokeMethod('sum', {"a": 5, "b": 3});
-      print('Sum result: $result');
+      debugPrint('Sum result: $result');
+
+      setState(() {
+        _fileContent = result.toString();
+      });
     } on PlatformException catch (e) {
-      print("Failed to call sum: '${e.message}'.");
+      debugPrint("Failed to call sum: '${e.message}'.");
     }
   }
 
@@ -54,12 +57,16 @@ class _HomePageState extends State<HomePage> {
 
       // 3. pass the temporary path to Go function
       final String result = await platform.invokeMethod('readFileContent', {"filePath": tempFile.path});
-      print('File content: $result');
+      debugPrint('File content: $result');
 
       // 4. remove temporary file
       await tempFile.delete();
+
+      setState(() {
+        _fileContent = result;
+      });
     } on PlatformException catch (e) {
-      print("Failed to read file content: '${e.message}'.");
+      debugPrint("Failed to read file content: '${e.message}'.");
     }
   }
 
@@ -78,6 +85,9 @@ class _HomePageState extends State<HomePage> {
             ElevatedButton(
               onPressed: _callReadFileContent,
               child: const Text('Read File Content'),
+            ),
+            Center(
+              child: Text(_fileContent)
             ),
           ],
         ),
