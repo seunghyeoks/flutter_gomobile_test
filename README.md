@@ -1,29 +1,65 @@
-# Gomobile_Sample
+# Flutter Gomobile test
 
-This is a sample project to try out using the Golang library in Flutter via gomobile.
+This is a sample project to test running golang code in a Flutter app, using `gomobile`.
 
-It builds and uses `samplefunc.go` (inside the `go_sample` folder) as a native library for mobile platforms.
+gomobile builds golang project into native library for mobile platforms. This sample project imports that library and runs it in `.dart` code.  
+
+## Project structure
+
+This project mainly consists of the following parts:
+
+* `go_sample`: Contains go code with simple functions defined.
+
+* `ios/Runner`: contains Swift code that runs on iOS and communicates with the Dart code.
+
+* `lib`: Contains the Dart code for mobile app
+
+## How to Build for iOS
+
+### 1. Prepare Go Project
+- Prepare your own project, or use the sample code in this sample project.
+- In this sample project, the go project is `go_sample`.
+
+### 2. Build with gomobile
+- In your Go project, run the command below to build the library for iOS:
+  ```sh
+  gomobile bind -target=ios
+  ```
+### 3. Copy Generated .xcframework
+- Copy the generated `.xcframework` to the iOS folder in your project.
+	- In this sample project, copy it is `ios/Samplefunc.xcframework`.
+
+### 4. Write Swift Bridge Code
+- Write Swift code to create a bridge for calling the native library.
+	- This is typically done by specifying the types for each function argument.
+	- In this sample project, the file is located at `ios/Runner/SamplefuncBridge.swift`.
+
+### 5. Edit AppDelegate.swift
+- Edit `ios/Runner/AppDelegate.swift`. I add a single line to register the plugin for the Go library.
+
+### 6. Configure Xcode Project
+- Open `ios/Runner.xcworkspace` with Xcode.
+	- Add the Swift bridge code and the .xcframework to your project in Xcode, like the picture below.
+	- Once you add them to Xcode, replacing an existing framework with a new version should work fine, as long as the files are not renamed. 
+	- If the filename has changed, run Xcode again and repeat the steps below. ![](./docs/xcode_setup1.png)
 
 
-## Step by Step for iOS
+### 7. Write Flutter Code
+- Write the flutter app you intended
+- Use `MethodChannel` to communicate with Swift from Dart.
+	- Refer to the comments in `main.dart` for more details.
+	- It is recommended to keep the code for the MethodChannel in a separate file
 
-1. Prepare Go Project
-	* In this sample project, it is `go_sample`
-2. Build with gomobile, 
-	 *	command will be `gomobile bind -target=ios`
-3. Copy a generated .xcframework to ios folder in project.
-	* In this sample project, it is `ios/Samplefunc.xcframework`
-4. Write Swift bridge code. You need Swift code to call the native library. It seems to do the job of specifying the type for each function arguments. 
-	* In this sample project, it is `ios/Runner/SamplefuncBridge.swift`.
-5. Edit `ios/Runner/AppDelegate.swift`, i add a single line to register plugin for Golibrary
-6. Write the code for your app in Flutter. To communicate with Swift in Dart, it uses a method called `MethodChannel`. Check out the comments in the `main.dart`
-7. Open `ios/Runner.xcworkspace` with Xcode. You need to add the bridge swift code you wrote, and the xcframework to your project via Xcode. Check the picture below!
-8. Once you have this setup in Xcode, you can later run the app by simply running `flutter run` in the terminal. However, if you modify and rebuild the Go library, it's probably safe to redo the Xcode configuration as well. 
+### 8. Run flutter app to test
+- After setting up the project in Xcode, you can run the app by simply executing:
+	```sh
+	flutter run
+	```
+- Note: You can run it in the terminal, but the terminal doesn't print information like `log.info` in the go code. If you used log in the go code, run the flutter app via Xcode
 
-![](./docs/xcode_setup1.png)
+## How to build for Android
+I got an app build error and stopped working on it for now.
 
-## Step by Step for Android
-
-## Reference
+## References
 * [Go wiki: Mobile](https://go.dev/wiki/Mobile)
 * [Flutter docs for MethodChannel](https://docs.flutter.dev/platform-integration/platform-channels)
